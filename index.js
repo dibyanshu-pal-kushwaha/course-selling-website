@@ -1,7 +1,6 @@
 const express = require("express");
 const mongoose = require("mongoose");
 const jwt = require("jsonwebtoken");
-const jwt_secret= "dibyanshu";
 const {courseRouter}= require("./routes/course");
 const {userRouter}= require("./routes/user");
 const {adminRouter}= require("./routes/admin");

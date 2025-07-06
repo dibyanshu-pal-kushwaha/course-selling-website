@@ -6,8 +6,8 @@ const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 require("dotenv").config();
 const {usermiddleware}= require("../middlewares/user");
-const jwt_secret = process.env.JWT_SECRET_user;
-
+const jwt_secret = process.env.JWT1;
+const { PurchaseModel }= require("./db");
 
 const Schema = z.object({
     email : z.string().min(3).max(100).email(),
@@ -15,7 +15,6 @@ const Schema = z.object({
     Firstname : z.string().min(3).max(100),
     Lastname : z.string().min(3).max(100)
 })
-
 
 userRouter.post("/signup",async function(req,res){
    
@@ -36,7 +35,7 @@ userRouter.post("/signup",async function(req,res){
     }else{
         res.status(403).json({
             msg : "Incorrect",
-            error: parsedData.errors
+            error: parsedData.error
         })
         
     }
@@ -93,6 +92,25 @@ userRouter.get("/",usermiddleware,async function(req,res){
         msg : "signed up successfully!",
         user
     })
+})
+
+userRouter.get("/purchases",usermiddleware,async function(req,res){
+    const userId = req.AdminId;
+
+    try{
+        const course = await PurchaseModel.find({
+        userId
+        }).lean();
+        //adding the payment gateway here:
+        res.json({
+            userId,
+            msg : "Successfull Purchase!"
+        })
+    }catch(e){
+        res.status(500).json({
+            msg : "Server Issues!"
+        })
+    }
 })
 
 

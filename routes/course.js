@@ -2,26 +2,49 @@ const { Router }= require("express");
 const courseRouter = Router();
 const { CourseModel }= require("./db");
 const { PurchaseModel }= require("./db");
-
-
-
-
-
+const {usermiddleware} =require("../middlewares/user");
 
 courseRouter.get("/preview",async function(req,res){
-    
-
-    res.json({
-        msg : "signed up successfully!"
+    try{
+        const courses = await CourseModel.find().lean();
+        
+        console.log(courses);
+        
+        res.json({
+        msg : "All courses!",
+        courses
     })
+
+    }
+    catch(e){
+            res.status(500).json({
+                msg : " Server Error!"
+            })
+        }
+
 })
 
 
-courseRouter.post("/purchase",async function(req,res){
-  // yahan hm payment ka seen daal skte hain // usko sikhna shuru kro maharaj
-    res.json({
-        msg : "You have purchased the course!"
-    })
+courseRouter.post("/purchase",usermiddleware,async function(req,res){
+    const courseId = req.body.courseId;
+    const userId = req.userId;
+
+    try{
+         await PurchaseModel.create({
+            userId,
+            courseId
+        })
+        //adding the payment gateway here:
+        res.json({
+            msg : "Successfull Purchase!"
+        })
+    }catch(e){
+        res.status(500).json({
+            msg : "Server Issues!"
+        })
+    }
+    
+
 })
 
 

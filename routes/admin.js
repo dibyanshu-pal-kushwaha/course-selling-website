@@ -1,13 +1,13 @@
 const { Router }= require("express");
 const adminRouter =Router();
 const { z } = require("zod");
-const { AdminModel }= require("./db");
+const { AdminModel, CourseModel }= require("./db");
 require("dotenv").config();
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 const { Adminmiddleware }= require("../middlewares/admin");
 
-const jwt_secret = process.env.JWT_SECRET_admin;
+const jwt_secret = process.env.JWT2;
 
 const Schema = z.object({
     email : z.string().min(3).max(100).email(),
@@ -15,6 +15,7 @@ const Schema = z.object({
     Firstname : z.string().min(3).max(100),
     Lastname : z.string().min(3).max(100)
 })
+
 
 adminRouter.post("/signup",async function(req,res){
     const parsedData = Schema.safeParse(req.body);
@@ -34,7 +35,7 @@ adminRouter.post("/signup",async function(req,res){
     }else{
         res.status(403).json({
             msg : "Incorrect",
-            error: parsedData.errors
+            error: parsedData.error
         })
         
     }
@@ -55,7 +56,7 @@ adminRouter.post("/login",async function(req,res){
 
         try {
              const unhashed_pass= await bcrypt.compare(password,Admin_email.password);
-             console.log(unhashed_pass);
+            //  console.log(unhashed_pass);
              if(!unhashed_pass){
                res.status(403).json({
                 msg: "Invalid Passwords2!"
@@ -63,7 +64,6 @@ adminRouter.post("/login",async function(req,res){
                return 
              }
              const token = jwt.sign( { id: Admin_email._id },jwt_secret);
-             console.log("token"+token);
                 res.json( {msg : "logged up successfully!"
                 , token}
                 )
@@ -85,23 +85,23 @@ adminRouter.post("/login",async function(req,res){
     
 })
 
-
 adminRouter.get("/courses",Adminmiddleware,async function(req,res){
-    const token = req.headers.token;
-    const  pass = jwt.verify(token,jwt_secret);
-    const user = await AdminModel.findById(pass.id);
-    console.log({user});
+   const adminId =req.AdminId;
+    const update =await CourseModel.find({
+        creatorId: adminId
+    }).lean();
+
     res.json({
-        msg : "signed up successfully!",
-        user
+        msg:" Courses",
+        update
     })
 })
 
-
 adminRouter.post("/courses/creation",Adminmiddleware,async function(req,res){
-    const userId = req.id;
+    const userId = req.AdminId;
+    const { title, description, price, imageUrl } = req.body;
     try
-    {const course = await course.create({
+    {const course = await CourseModel.create({
         title,
         description,
         price,
@@ -120,17 +120,28 @@ adminRouter.post("/courses/creation",Adminmiddleware,async function(req,res){
     }
 })
 
-
-    
-
-
-
-adminRouter.put("/courses",async function(req,res){
+adminRouter.put("/courses/update",Adminmiddleware,async function(req,res){
+    const adminId =req.AdminId;
+    const {courseId,title,description,price,imageUrl} = req.body;
+    const update = await CourseModel.updateOne({
+        _id: courseId,
+        creatorId: adminId
+    },{
+        title ,
+        description ,
+        price ,
+        imageUrl,
+        
+    })
 
     res.json({
-        msg : "signed up successfully!"
+        msg:" Course updated",
+        courseId: courseId
     })
+    
 })
+
+
 
 module.exports={
     adminRouter : adminRouter
