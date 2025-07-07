@@ -1,6 +1,6 @@
 const jwt = require("jsonwebtoken");
 const jwt_Admin_mid= process.env.JWT2;
-
+  
 
  async function Adminmiddleware(req,res,next){
     const token = req.headers.token;

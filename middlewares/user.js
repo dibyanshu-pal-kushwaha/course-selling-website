@@ -9,21 +9,20 @@ function usermiddleware(req,res,next){
     }
     // console.log(token);
     try{
-        const decode = jwt.verify(token,jwt_user_mid);
+        // console.log("hi");
+        const decode = jwt.verify(token,process.env.JWT1);
         // console.log(decode);
-        // if(decode){
-        //     req.userId =decode.id;
-        //     next();
-        // }
-        console.log("Token decoded:", decode);
-
-        if (decode && decode.id) {
-            req.userId = decode.id;
+        if(decode){
+            req.userId =decode.id;
             next();
         }
-        else {
-            res.status(401).json({ msg: "Invalid token payload" });
-        }
+        // console.log("Token decoded:", decode);
+
+        // if (decode && decode.id) {
+        //     req.userId = decode.id;
+        //     next();
+        // }
+        
     }catch(e){
         res.status(401).json({
             msg : "Unauthorized User!"

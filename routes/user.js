@@ -1,7 +1,7 @@
 const { Router } =require("express");
 const { z } = require("zod");
 const  userRouter =Router();
-const { UserModel }= require("./db");
+const { UserModel,CourseModel }= require("./db");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 require("dotenv").config();
@@ -95,16 +95,32 @@ userRouter.get("/",usermiddleware,async function(req,res){
 })
 
 userRouter.get("/purchases",usermiddleware,async function(req,res){
-    const userId = req.AdminId;
-
+    const userId = req.userId;
+    // console.log(userId)
     try{
-        const course = await PurchaseModel.find({
-        userId
-        }).lean();
+        console.log("Hi")
+        const purchases = await PurchaseModel.find({ userId }).lean();
+
+        
         //adding the payment gateway here:
+        /*
+        below is as same as : 
+        const coursesID =[];
+        for(let i=0;i<CourseModel.length;i++){
+        coursesID.push_back(purchases[i].courseId)
+        }
+        const courses = await CourseModel.find({
+            _id: {$in : courseID}
+        })
+\
+        */
+
+        const courses = await CourseModel.find({
+            _id: {$in : purchases.map(p => p.courseId) }
+        });
         res.json({
-            userId,
-            msg : "Successfull Purchase!"
+            purchases,courses,
+            msg : "Successful Purchase!"
         })
     }catch(e){
         res.status(500).json({
